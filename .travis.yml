@@ -2,7 +2,14 @@ language: node_js
 node_js:
   - "0.10"
 before_script:
-  - sudo apt-get install fontforge eot-utils
-  - wget http://people.mozilla.com/~jkew/woff/woff-code-latest.zip
-  - unzip woff-code-latest.zip -d sfnt2woff && cd sfnt2woff && make && sudo mv sfnt2woff /usr/local/bin/ && cd ..
+  - sudo apt-get install fontforge
   - npm install -g grunt-cli
+
+  - git clone https://github.com/google/woff2.git
+  - cd woff2
+  - git submodule init
+  - git submodule update
+  - make clean all
+  - export PATH=$PWD:$PATH
+  - echo $PATH
+  - cd ..

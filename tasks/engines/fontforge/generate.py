@@ -3,7 +3,6 @@
 import fontforge
 import os
 import sys
-import hashlib
 import json
 from subprocess import call
 from distutils.spawn import find_executable
@@ -12,19 +11,18 @@ args = json.load(sys.stdin)
 
 f = fontforge.font()
 f.encoding = 'UnicodeFull'
+f.copyright = ''
 f.design_size = 16
 f.em = args['fontHeight']
-f.ascent = args['ascent']
 f.descent = args['descent']
+f.ascent = args['fontHeight'] - args['descent']
 if args['normalize']:
 	f.autoWidth(0, 0, args['fontHeight'])
-
-m = hashlib.md5()
 
 KERNING = 15
 
 
-def empty_char(f, c):
+def create_empty_char(f, c):
 	pen = f.createChar(ord(c), c).glyphPen()
 	pen.moveTo((0, 0))
 	pen = None
@@ -57,9 +55,10 @@ for dirname, dirnames, filenames in os.walk(args['inputDir']):
 
 			cp = args['codepoints'][name]
 
-			m.update(filename + str(size) + ';')
 			if args['addLigatures']:
-				[empty_char(f, c) for c in name]
+				name = str(name)  # Convert Unicode to a regular string because addPosSub doesn't work with Unicode
+				for char in name:
+					create_empty_char(f, char)
 				glyph = f.createChar(cp, name)
 				glyph.addPosSub('liga', tuple(name))
 			else:
@@ -68,14 +67,13 @@ for dirname, dirnames, filenames in os.walk(args['inputDir']):
 
 			if args['normalize']:
 				glyph.left_side_bearing = glyph.right_side_bearing = 0
-				glyph.round()
 			else:
 				glyph.width = args['fontHeight']
 
+			if args['round']:
+				glyph.round(int(args['round']))
 
 fontfile = args['dest'] + os.path.sep + args['fontBaseName']
-if args['addHashes']:
-	fontfile += '-' + m.hexdigest()
 
 f.fontname = args['fontBaseName']
 f.familyname = args['fontBaseName']
@@ -121,7 +119,7 @@ if 'eot' in args['types']:
 	call('python "%(path)s/../../bin/eotlitetool.py" "%(font)s.ttf" --output "%(font)s.eot"' % {'path': scriptPath, 'font': fontfile}, shell=True)
 
 # Delete TTF if not needed
-if not 'ttf' in args['types']:
+if (not 'ttf' in args['types']) and (not 'woff2' in args['types']):
 	os.remove(fontfile + '.ttf')
 
 print(json.dumps({'file': fontfile}))

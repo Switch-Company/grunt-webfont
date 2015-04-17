@@ -77,7 +77,7 @@ module.exports = function(grunt) {
 			},
 			template_scss: {
 				src: 'test/src/*.svg',
-				dest: 'test/tmp/template',
+				dest: 'test/tmp/template_scss',
 				options: {
 					stylesheet: 'scss',
 					template: 'test/templates/template.scss'
@@ -85,9 +85,8 @@ module.exports = function(grunt) {
 			},
 			template_sass: {
 				src: 'test/src/*.svg',
-				dest: 'test/tmp/template',
+				dest: 'test/tmp/template_sass',
 				options: {
-					stylesheet: 'sass',
 					template: 'test/templates/template.sass'
 				}
 			},
@@ -162,8 +161,9 @@ module.exports = function(grunt) {
 					hashes: false
 				}
 			},
+			// #167: Ligatures with hypen don’t work
 			ligatures: {
-				src: 'test/src/*.svg',
+				src: 'test/src_ligatures/*.svg',
 				dest: 'test/tmp/ligatures',
 				options: {
 					hashes: false,
@@ -253,7 +253,22 @@ module.exports = function(grunt) {
 				options: {
 					hashes: false
 				}
-			}
+			},
+			woff2: {
+				src: 'test/src/*.svg',
+				dest: 'test/tmp/woff2',
+				options: {
+					types: 'woff2,woff'
+				}
+			},
+			woff2_node: {
+				src: 'test/src/*.svg',
+				dest: 'test/tmp/woff2_node',
+				options: {
+					types: 'woff2,woff',
+					engine: 'node'
+				}
+			},
 		},
 		nodeunit: {
 			all: ['test/webfont_test.js']
@@ -261,15 +276,7 @@ module.exports = function(grunt) {
 		jshint: {
 			all: ['Gruntfile.js', 'tasks/*.js', 'test/*.js'],
 			options: {
-				node: true,
-				white: false,
-				smarttabs: true,
-				eqeqeq: true,
-				immed: true,
-				latedef: false,
-				newcap: true,
-				undef: true,
-				laxbreak: true
+				jshintrc: true
 			}
 		},
 		watch: {
