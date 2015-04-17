@@ -335,9 +335,6 @@ module.exports = function(grunt) {
 			var ext = path.extname(o.template) || '.css';  // Use extension of o.template file if given, or default to .css
 			o.cssTemplate = readTemplate(o.template, o.syntax, ext);
 
-			var cssFilePrefix = option(wf.cssFilePrefixes, o.stylesheet);
-			var cssFile = path.join(o.destCss, cssFilePrefix + o.cssFileName + '.' + o.stylesheet);
-
 			var cssContext = _.extend(o, {
 				iconsStyles: true
 			});
@@ -611,7 +608,8 @@ module.exports = function(grunt) {
 		 */
 		function getCssFilePath() {
 			var cssFilePrefix = option(wf.cssFilePrefixes, o.stylesheet);
-			return path.join(o.destCss, cssFilePrefix + o.fontBaseName + '.' + o.stylesheet);
+
+			return path.join(o.destCss, cssFilePrefix + o.cssFileName + '.' + o.stylesheet);
 		}
 
 		/**
