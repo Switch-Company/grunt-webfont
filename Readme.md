@@ -1,9 +1,9 @@
 # SVG to webfont converter for Grunt
 
-[![Build Status](https://travis-ci.org/sapegin/grunt-webfont.png)](https://travis-ci.org/sapegin/grunt-webfont)
-[![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
+[![Build Status](https://travis-ci.org/sapegin/grunt-webfont.svg)](https://travis-ci.org/sapegin/grunt-webfont)
+[![Downloads on npm](http://img.shields.io/npm/dm/grunt-webfont.svg?style=flat)](https://www.npmjs.com/package/grunt-webfont)
 
-Generate custom icon webfonts from SVG files via Grunt. Based on [Font Custom](http://endtwist.github.com/fontcustom/).
+Generate custom icon webfonts from SVG files via Grunt. Based on [Font Custom](http://fontcustom.com/).
 
 This task will make all you need to use font-face icon on your website: font in all needed formats, CSS/Sass/LESS/Stylus and HTML demo page.
 
@@ -11,6 +11,7 @@ This task will make all you need to use font-face icon on your website: font in 
 
 * Works on Mac, Windows and Linux.
 * Very flexible.
+* Supports all web font formats: WOFF, [WOFF2](https://github.com/sapegin/grunt-webfont/wiki/WOFF2-support), EOT, TTF and SVG.
 * Semantic: uses [Unicode private use area](http://bit.ly/ZnkwaT).
 * [Cross-browser](http://www.fontspring.com/blog/further-hardening-of-the-bulletproof-syntax/): IE8+.
 * BEM or Bootstrap output CSS style.
@@ -23,7 +24,7 @@ This task will make all you need to use font-face icon on your website: font in 
 
 ## Installation
 
-This plugin requires Grunt 0.4. Note that `ttfautohint` is optional, but your generated font will not be properly hinted if it’s not installed.
+This plugin requires Grunt 0.4. Note that `ttfautohint` is optional, but your generated font will not be properly hinted if it’s not installed. And make sure you don’t use `ttfautohint` 0.97 because that version won’t work.
 
 ### OS X
 
@@ -36,6 +37,8 @@ npm install grunt-webfont --save-dev
 
 *`fontforge` isn’t required for `node` engine (see below).*
 
+:skull: [Notes on experimental WOFF2 support](https://github.com/sapegin/grunt-webfont/wiki/WOFF2-support).
+
 ### Linux
 
 ```
@@ -44,6 +47,8 @@ npm install grunt-webfont --save-dev
 ```
 
 *`fontforge` isn’t required for `node` engine (see below).*
+
+:skull: [Notes on experimental WOFF2 support](https://github.com/sapegin/grunt-webfont/wiki/WOFF2-support).
 
 ### Windows
 
@@ -73,7 +78,7 @@ There are two font rendering engines available. See also `engine` option below.
 * You have to install `fontforge`.
 * Really weird bugs sometimes.
 
-### node :skull: experimental :skull:
+### node
 
 #### Pros
 
@@ -83,7 +88,7 @@ There are two font rendering engines available. See also `engine` option below.
 #### Cons
 
 * Doesn’t work with some SVG files.
-* Ligatures don’t supported.
+* Ligatures aren’t supported.
 
 
 ## Configuration
@@ -159,9 +164,11 @@ List of styles to be added to CSS files: `font` (`font-face` declaration), `icon
 
 #### types
 
-Type: `string|array` Default: `'eot,woff,ttf'`
+Type: `string|array` Default: `'eot,woff,ttf'`, available: `'eot,woff2,woff,ttf,svg'`
 
 Font files types to generate.
+
+:skull: [Notes on experimental WOFF2 support](https://github.com/sapegin/grunt-webfont/wiki/WOFF2-support).
 
 #### order
 
@@ -210,6 +217,26 @@ options: {
 }
 ```
 
+Some extra data is available for you in templates:
+
+* `hash`: a unique string to flush browser cache. Available even if `hashes` option is `false`.
+
+* `fontRawSrcs`: array of font-face’s src values not merged to a single line:
+
+```
+[
+	[
+		'url("icons.eot")'
+	],
+	[
+		'url("icons.eot?#iefix") format("embedded-opentype")',
+		'url("icons.woff") format("woff")',
+		'url("icons.ttf") format("truetype")'
+	]
+]
+```
+
+
 #### templateOptions
 
 Type: `object` Default: `{}`
@@ -228,7 +255,7 @@ options: {
 
 #### stylesheet
 
-Type: `string` Default: `'css'`
+Type: `string` Default: `'css'` or extension of `template`
 
 Stylesheet type. Can be css, sass, scss, less... If `sass` or `scss` is used, `_` will prefix the file (so it can be a used as a partial).
 
@@ -303,7 +330,7 @@ options: {
 }
 ```
 
-#### engine :skull: experimental :skull:
+#### engine
 
 Type: `string` Default: `fontforge`
 
@@ -315,7 +342,7 @@ Type: `boolean` Default: `false`
 
 Adds IE7 support using a `*zoom: expression()` hack.
 
-#### startCodepoint
+#### startCodepoint
 
 Type: `integer` Default: `0xF101`
 
@@ -341,17 +368,37 @@ Type: `boolean` Default: `true`
 
 Enables font auto hinting using `ttfautohint`.
 
+#### round
+
+Type: `number` Default: `10e12`
+
+Setup SVG path rounding.
+
 #### fontHeight
 
 Type: `number` Default: `512`
+
+The output font height.
 
 #### descent
 
 Type: `number` Default: `64`
 
-#### ascent
+The font descent. The descent should be a positive value. The ascent formula is: `ascent = fontHeight - descent`.
 
-Type: `number` Default: `448`
+#### callback
+
+Type: `function` Default: `null`
+
+Allows for a callback to be called when the task has completed and passes in the filename of the generated font, an array of the various font types created and an array of all the glyphs created.
+
+```javascript
+options: {
+	callback: function(filename, types, glyphs) {
+		// ...
+	}
+}
+````
 
 ### Config Examples
 
@@ -453,14 +500,14 @@ The LESS mixins then may be used like so:
 
 ## Changelog
 
-The changelog can be found in the `Changelog.md` file.
+The changelog can be found in the [Changelog.md](Changelog.md) file.
 
 ## Troubleshooting
 
-##### I have problems displaying the font in Firefox
+### I have problems displaying the font in Firefox
 
 Firefox doesn’t allow cross-domain fonts: [Specifications](http://www.w3.org/TR/css3-fonts/#font-fetching-requirements), [Bugzilla Ticket](https://bugzilla.mozilla.org/show_bug.cgi?id=604421), [How to fix it](https://coderwall.com/p/v4uwyq).
 
 ## License
 
-The MIT License, see the included `License.md` file.
+The MIT License, see the included [License.md](License.md) file.
